@@ -4,6 +4,15 @@
 #include <stdint.h>
 #include <assert.h>
 
+void *custom_malloc(size_t size) {
+    void *ptr = malloc(sizeof(uint8_t) * size);
+    if(ptr == NULL) {
+        fprintf(stderr, "error: buy more ram");
+        exit(1);
+    }
+    return ptr;
+}
+
 typedef struct Arena {
     struct Arena *next;
     size_t capacity;
@@ -12,7 +21,7 @@ typedef struct Arena {
 } Arena;
 
 Arena arena_init(size_t capacity) {
-    void *data = malloc(sizeof(uint8_t) * capacity);
+    void *data = custom_malloc(sizeof(uint8_t) * capacity);
     Arena arena = {
         .capacity = capacity,
         .size = 0,
@@ -27,7 +36,7 @@ void *arena_alloc(Arena *arena, size_t size) {
     Arena *current = arena;
     while(!(current->size + size <= current->capacity)) {
         if(current->next == NULL) {
-            Arena *next = malloc(sizeof(Arena));
+            Arena *next = custom_malloc(sizeof(Arena));
             Arena initted = arena_init(arena->capacity);
             memcpy(next, &initted, sizeof(Arena));
             current->next = next;
@@ -62,7 +71,7 @@ void arena_free(Arena *arena) {
     arena->next = NULL;
 }
 
-void print_arena(const Arena *arena) {
+void arena_print(const Arena *arena) {
     Arena *current = arena;
     while(current != NULL) {
         printf("capacity: %zu, size: %zu, data ptr: %p -> ", current->capacity, current->size, current->data);
@@ -79,7 +88,7 @@ int main(void) {
     void *ptr4 = arena_alloc(&arena, 1000);
     void *ptr5 = arena_alloc(&arena, 1023);
     void *ptr6 = arena_alloc(&arena, 1000);
-    print_arena(&arena);
+    arena_print(&arena);
     arena_free(&arena);
-    print_arena(&arena);
+    arena_print(&arena);
 }
