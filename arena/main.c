@@ -42,7 +42,7 @@ void *arena_alloc(Arena *arena, size_t size) {
 
 void arena_reset(Arena *arena) {
     Arena *current = arena;
-    while(current->next != NULL) {
+    while(current != NULL) {
         current->size = 0;
         current = current->next;
     }
@@ -74,7 +74,7 @@ void print_arena(const Arena *arena) {
 int main(void) {
     Arena arena = arena_init(1024);
     void *ptr = arena_alloc(&arena, 18);
-    void *ptr2 = arena_alloc(&arena, 10);
+    char *ptr2 = arena_alloc(&arena, 11);
     void *ptr3 = arena_alloc(&arena, 218);
     void *ptr4 = arena_alloc(&arena, 1000);
     void *ptr5 = arena_alloc(&arena, 1023);
