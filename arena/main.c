@@ -50,6 +50,8 @@ void arena_reset(Arena *arena) {
 
 void arena_free(Arena *arena) {
     free(arena->data);
+    arena->capacity = 0;
+    arena->size = 0;
     Arena *current = arena->next;
     while(current != NULL) {
         Arena *tmp = current->next;
@@ -61,10 +63,15 @@ void arena_free(Arena *arena) {
 }
 
 void print_arena(const Arena *arena) {
-    printf("capacity: %zu, size: %zu, data ptr: %p\n", arena->capacity, arena->size, arena->data);
+    Arena *current = arena;
+    while(current != NULL) {
+        printf("capacity: %zu, size: %zu, data ptr: %p -> ", current->capacity, current->size, current->data);
+        current = current->next;
+    }
+    printf("NULL\n");
 }
 
-int main() {
+int main(void) {
     Arena arena = arena_init(1024);
     void *ptr = arena_alloc(&arena, 18);
     void *ptr2 = arena_alloc(&arena, 10);
@@ -72,7 +79,7 @@ int main() {
     void *ptr4 = arena_alloc(&arena, 1000);
     void *ptr5 = arena_alloc(&arena, 1023);
     void *ptr6 = arena_alloc(&arena, 1000);
-    arena_reset(&arena);
-    print_arena(arena.next);
+    print_arena(&arena);
     arena_free(&arena);
+    print_arena(&arena);
 }
