@@ -49,17 +49,11 @@ void arena_reset(Arena *arena) {
 }
 
 void arena_free(Arena *arena) {
-    Arena *current = arena;
-    while(current != NULL) {
-        current->capacity = 0;
-        current->size = 0;
-        free(current->data);
-        current = current->next;
-    }
-    current = arena->next;
-
+    free(arena->data);
+    Arena *current = arena->next;
     while(current != NULL) {
         Arena *tmp = current->next;
+        free(current->data);
         free(current);
         current = tmp;
     }
