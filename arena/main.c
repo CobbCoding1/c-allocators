@@ -40,7 +40,7 @@ void *arena_alloc(Arena *arena, size_t size) {
     return data;
 }
 
-void *arena_reset(Arena *arena) {
+void arena_reset(Arena *arena) {
     Arena *current = arena;
     while(current->next != NULL) {
         current->size = 0;
@@ -48,13 +48,20 @@ void *arena_reset(Arena *arena) {
     }
 }
 
-void *arena_free(Arena *arena) {
+void arena_free(Arena *arena) {
     Arena *current = arena;
-    while(current->next != NULL) {
+    while(current != NULL) {
         current->capacity = 0;
         current->size = 0;
         free(current->data);
         current = current->next;
+    }
+    current = arena->next;
+
+    while(current != NULL) {
+        Arena *tmp = current->next;
+        free(current);
+        current = tmp;
     }
     arena->next = NULL;
 }
@@ -70,7 +77,7 @@ int main() {
     void *ptr3 = arena_alloc(&arena, 218);
     void *ptr4 = arena_alloc(&arena, 1000);
     void *ptr5 = arena_alloc(&arena, 1023);
-    void *ptr6 = arena_alloc(&arena, 218);
+    void *ptr6 = arena_alloc(&arena, 1000);
     arena_reset(&arena);
     print_arena(arena.next);
     arena_free(&arena);
