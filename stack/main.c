@@ -5,6 +5,13 @@
 #include <assert.h>
 
 typedef uint8_t byte;
+#define ALIGNMENT sizeof(size_t)
+
+typedef struct {
+    size_t capacity;
+    size_t size;
+    byte *data;
+} Stack;
 
 void *custom_realloc(void *pointer, size_t size) {
     void *ptr = realloc(pointer, sizeof(byte) * size);
@@ -14,12 +21,6 @@ void *custom_realloc(void *pointer, size_t size) {
     }
     return ptr;
 }
-
-typedef struct {
-    size_t capacity;
-    size_t size;
-    byte *data;
-} Stack;
 
 Stack stack_init(size_t capacity) {
     void *data = custom_realloc(NULL, sizeof(byte) * capacity);
@@ -37,31 +38,38 @@ void *stack_realloc(Stack *stack, size_t capacity) {
     return stack->data;
 }
 
+// allocates the size passed + 8 more (sizeof(size_t),ALLIGNMENT)
 void *stack_push(Stack *stack, size_t size) {
-    if(stack->capacity < size) {
+    if(stack->capacity < size || stack == NULL) {
         return NULL;
     }
     byte *data = &stack->data[stack->size];
     stack->size += size;
     stack->data[stack->size] = size;
-    stack->size += sizeof(size_t);
+    stack->size += ALIGNMENT;
     return data;
 }
 
 int stack_pop(Stack *stack) {
-    if(stack->size < 8) {
+    if(stack->size < 8 || stack == NULL) {
         return 1;
     }
-    size_t amount = *(size_t*)&stack->data[stack->size - sizeof(size_t)];
-    stack->size -= amount + sizeof(size_t);
+    size_t amount = *(size_t*)&stack->data[stack->size - ALIGNMENT];
+    stack->size -= amount + ALIGNMENT;
     return 0;
 }
 
 void stack_reset(Stack *stack) {
+    if(stack == NULL) {
+        return;
+    }
     stack->size = 0;
 }
 
 void stack_free(Stack *stack) {
+    if(stack == NULL) {
+        return;
+    }
     free(stack->data);
     stack->capacity = 0;
     stack->size = 0;
@@ -76,10 +84,13 @@ int main(void) {
     stack_print(&stack);
     stack_realloc(&stack, 2000);
     int *value = stack_push(&stack, 12);
+    char *str = stack_push(&stack, sizeof(char) * 15);
+    strncpy(str, "Hello, world!\n", 15);
     stack_push(&stack, 100);
     stack_print(&stack);
     *value = 12;
     stack_print(&stack);
     printf("%d\n", *value);
+    printf(str);
     stack_free(&stack);
 }
