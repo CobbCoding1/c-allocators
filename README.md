@@ -14,3 +14,5 @@ cd arena
 - [ ] Pool Allocator
 - [ ] Reimplement Malloc (from scratch using syscalls)
 
+More planned allocators may be added
+
