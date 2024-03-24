@@ -16,6 +16,7 @@ void arena_print();
 int main(void) {
     arena_init(1024);
     void *ptr = arena_alloc(18);
+    void *ptr_new = arena_realloc(ptr, 18, 20);
     char *ptr2 = arena_alloc(11);
     void *ptr3 = arena_alloc(218);
     void *ptr4 = arena_alloc(1000);
@@ -79,6 +80,20 @@ void *arena_alloc(size_t size) {
     uint8_t *data = &current->data[current->size];
     current->size += size;
     return data;
+}
+
+void *arena_realloc(void *old_ptr, size_t old_size, size_t new_size) {
+    if (new_size <= old_size) return old_ptr;
+
+    void *new_ptr = arena_alloc(new_size);
+    char *new_ptr_char = new_ptr;
+    char *old_ptr_char = old_ptr;
+
+    for (size_t i = 0; i < old_size; ++i) {
+        new_ptr_char[i] = old_ptr_char[i];
+    }
+
+    return new_ptr;
 }
 
 void arena_reset() {
