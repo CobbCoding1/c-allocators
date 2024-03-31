@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <assert.h>
 
+#ifndef ARENA_INIT_SIZE
+#define ARENA_INIT_SIZE 128
+#endif
+
 void *custom_malloc(size_t size) {
     void *ptr = malloc(sizeof(uint8_t) * size);
     if(ptr == NULL) {
@@ -32,12 +36,11 @@ Arena arena_init(size_t capacity) {
 }
 
 void *arena_alloc(Arena *arena, size_t size) {
-    assert(arena->capacity >= size);
     Arena *current = arena;
     while(!(current->size + size <= current->capacity)) {
         if(current->next == NULL) {
             Arena *next = custom_malloc(sizeof(Arena));
-            Arena initted = arena_init(arena->capacity);
+            Arena initted = arena_init(arena->capacity+size);
             memcpy(next, &initted, sizeof(Arena));
             current->next = next;
         }
@@ -86,7 +89,7 @@ void arena_free(Arena *arena) {
 }
 
 void arena_print(const Arena *arena) {
-    Arena *current = arena;
+    const Arena *current = arena;
     while(current != NULL) {
         printf("capacity: %zu, size: %zu, data ptr: %p -> ", current->capacity, current->size, current->data);
         current = current->next;
@@ -95,9 +98,8 @@ void arena_print(const Arena *arena) {
 }
 
 int main(void) {
-    Arena arena = arena_init(1024);
+    Arena arena = arena_init(ARENA_INIT_SIZE);
     void *ptr = arena_alloc(&arena, 18);
-    void *ptr_new = arena_realloc(&arena, ptr, 18, 30);
     char *ptr2 = arena_alloc(&arena, 11);
     void *ptr3 = arena_alloc(&arena, 218);
     void *ptr4 = arena_alloc(&arena, 1000);
